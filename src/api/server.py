@@ -48,12 +48,19 @@ def find_alphanum_words(sentence):
 
 # Retrieves the information we have given a PartSelect code
 def retrieve_part_info(PS_code):
-    mask = part_info_df.apply(lambda row: PS_code in str(row.values), axis=1)
+    # Check for matches in any cell of each row, convert values to string for safe comparison
+    mask = part_info_df.astype(str).apply(lambda row: PS_code in row.to_string(), axis=1)
+    
+    # Get matching rows
     matching_row = part_info_df[mask]
 
+    # If there is at least one match, return the first row as a formatted string
     if not matching_row.empty:
         row_string = " | ".join(matching_row.iloc[0].astype(str))
-    return row_string
+        return row_string
+
+    return None
+
 
 
 @app.post("/search")
@@ -74,10 +81,14 @@ async def search(request: Request):
     model_info = {}
     model_codes_in_query = find_alphanum_words(query_text.upper())
     for model_code in model_codes_in_query:
-        model_info[model_code] = []
-        neighbors = list(model_part_G.neighbors(model_code))
-        for part_code in neighbors:
-            model_info[model_code].append(retrieve_part_info(part_code))
+        try:
+            if 'PS' not in model_code:
+                model_info[model_code] = []
+                neighbors = list(model_part_G.neighbors(model_code))
+                for part_code in neighbors:
+                    model_info[model_code].append(retrieve_part_info(part_code))
+        except:
+            pass
     
     # Get embeddings and perform FAISS search
     query_embedding = model.encode(query_text)

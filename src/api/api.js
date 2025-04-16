@@ -60,14 +60,14 @@ export const getAIMessage = async (userQuery) => {
     console.log("Search results:", searchResults);
 
     let chunks = '';
-    let model = 'deepseek-reasoner'
+    let model = 'deepseek-reasoner';
     let part_info = '';
-    let model_info = ''
+    let model_info = '';
 
       // threshold allows for more reasoning freedom when given less context
     if (parseFloat(searchResults.distances?.[0]) < .15) {
       chunks = "CONTEXT:\n" + searchResults.chunks.map(res => res.original_text).join("\n");
-      model = 'deepseek-reasoner'
+      model = 'deepseek-reasoner';
     }
       // provides product information for mentioned products
     if (Array.isArray(searchResults.part_info) && searchResults.part_info.length > 0) {
@@ -78,16 +78,17 @@ export const getAIMessage = async (userQuery) => {
       model_info = "MODELS AND THEIR PARTS:\n";
       for (const [model, parts] of Object.entries(searchResults.model_info)) {
         // Create a sentence for the model and its parts
+        if (parts.length > 0){
         let partsList = parts.slice(0, 4).join(", ");
         model_info += `${model} is compatible with the following parts: ${partsList}.\n`;
-      }
+      }}
     }
 
     const query = `${part_info}
-                   ${model_info}
-                   ${chunks}
+${model_info}
+${chunks}
  
-                    QUESTION: ${userQuery}`;
+QUESTION: ${userQuery}`;
 
     console.log(query)
 
