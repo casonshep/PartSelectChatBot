@@ -65,7 +65,7 @@ export const getAIMessage = async (userQuery) => {
     let model_info = '';
 
       // threshold allows for more reasoning freedom when given less context
-    if (parseFloat(searchResults.distances?.[0]) < .15) {
+    if (parseFloat(searchResults.distances?.[0]) < .2) {
       chunks = "CONTEXT:\n" + searchResults.chunks.map(res => res.original_text).join("\n");
       model = 'deepseek-reasoner';
     }
